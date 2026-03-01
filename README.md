@@ -12,6 +12,9 @@ To setup it up, add a step to your GitHub workflow configuration :
     version: '4.0.2'
 ```
 
+The examples use a pinned commit hash instead of a branch or tag to ensure an
+immutable reference — the code you run won't change unexpectedly.
+
 Cosmopolitan toolchain is added to the path so you can run any cosmos commands
 after. For example, to compile your project using `cosmocc`, add a step :
 

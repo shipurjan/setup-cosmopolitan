@@ -25,6 +25,18 @@ By default, Cosmopolitan toolchain is installed in `.cosmopolitan` directory
 relative to the GitHub workspace. You can optionally change it using the `path`
 input.
 
+To use the latest nightly build from Cosmopolitan's CI:
+
+```yaml
+- uses: tritao/setup-cosmopolitan@v1.3
+  with:
+    version: 'nightly'
+```
+
+Nightly builds are downloaded from GitHub Actions artifacts and require a GitHub
+token (provided automatically via `github-token`). Nightly builds skip caching
+since they change daily.
+
 You can also specify a custom URL for the cosmocc zip archive using the `url`
 input. When using `url`, the `version` input is optional — if omitted, caching
 is skipped and the archive is always downloaded fresh:

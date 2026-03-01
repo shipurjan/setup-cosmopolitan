@@ -1,6 +1,7 @@
 import * as cache from '@actions/cache'
 import * as core from '@actions/core'
 import * as tc from '@actions/tool-cache'
+import { HttpClient } from '@actions/http-client'
 
 import fs from 'fs'
 import path from 'path'
@@ -9,6 +10,50 @@ import https from 'https'
 
 const apeInstallUrl =
   'https://raw.githubusercontent.com/jart/cosmopolitan/master/ape/apeinstall.sh'
+
+const COSMO_REPO = 'jart/cosmopolitan'
+const NIGHTLY_WORKFLOW = 'nightly-cosmocc.yml'
+
+async function resolveNightlyUrl(token) {
+  const http = new HttpClient('setup-cosmopolitan', [], {
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github+json'
+    }
+  })
+
+  const runsUrl = `https://api.github.com/repos/${COSMO_REPO}/actions/workflows/${NIGHTLY_WORKFLOW}/runs?status=success&per_page=1`
+  const runsRes = await http.getJson(runsUrl)
+
+  if (
+    !runsRes.result ||
+    !runsRes.result.workflow_runs ||
+    runsRes.result.workflow_runs.length === 0
+  ) {
+    throw new Error(
+      'No successful nightly workflow runs found for cosmopolitan'
+    )
+  }
+
+  const runId = runsRes.result.workflow_runs[0].id
+  core.info(`Found nightly run: ${runId}`)
+
+  const artifactsUrl = `https://api.github.com/repos/${COSMO_REPO}/actions/runs/${runId}/artifacts`
+  const artifactsRes = await http.getJson(artifactsUrl)
+
+  if (
+    !artifactsRes.result ||
+    !artifactsRes.result.artifacts ||
+    artifactsRes.result.artifacts.length === 0
+  ) {
+    throw new Error(`No artifacts found for nightly run ${runId}`)
+  }
+
+  const artifact = artifactsRes.result.artifacts[0]
+  core.info(`Found nightly artifact: ${artifact.name}`)
+
+  return artifact.archive_download_url
+}
 
 /**
  * The main function for the action.
@@ -28,7 +73,7 @@ async function run() {
       throw new Error('Path must be relative to the workspace')
     }
 
-    if (version) {
+    if (version && version !== 'nightly') {
       const cachedDir = tc.find('cosmocc', version)
       if (fs.existsSync(cachedDir)) {
         core.addPath(path.join(cachedDir, 'bin'))
@@ -63,7 +108,17 @@ async function run() {
     } else {
       const cosmopolitanPath = path.join(process.env.GITHUB_WORKSPACE, userPath)
 
-      const cosmopolitan = await tc.downloadTool(customUrl)
+      let url
+      let auth
+      if (version === 'nightly') {
+        const githubToken = core.getInput('github-token', { required: true })
+        url = await resolveNightlyUrl(githubToken)
+        auth = `token ${githubToken}`
+      } else {
+        url = customUrl
+      }
+
+      const cosmopolitan = await tc.downloadTool(url, undefined, auth)
       await tc.extractZip(cosmopolitan, cosmopolitanPath)
       core.addPath(path.join(cosmopolitanPath, 'bin'))
 

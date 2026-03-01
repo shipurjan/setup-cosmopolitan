@@ -13,6 +13,10 @@ inputs:
   url:
     description: 'Custom URL for cosmocc zip archive'
     required: false
+  github-token:
+    description: 'GitHub token for downloading nightly artifacts'
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: 'node24'

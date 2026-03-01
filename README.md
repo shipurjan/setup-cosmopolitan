@@ -24,3 +24,13 @@ after. For example, to compile your project using `cosmocc`, add a step :
 By default, Cosmopolitan toolchain is installed in `.cosmopolitan` directory
 relative to the GitHub workspace. You can optionally change it using the `path`
 input.
+
+You can also specify a custom URL for the cosmocc zip archive using the `url`
+input:
+
+```yaml
+- uses: tritao/setup-cosmopolitan@v1.3
+  with:
+    version: '4.0.2'
+    url: 'https://example.com/custom-cosmocc.zip'
+```

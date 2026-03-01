@@ -40,11 +40,17 @@ async function run() {
       return
     }
 
-    const urlBase = 'https://cosmo.zip/pub/cosmocc/'
-    const url =
-      version === 'latest'
-        ? `${urlBase}cosmocc.zip`
-        : `${urlBase}cosmocc-${version}.zip`
+    const customUrl = core.getInput('url', { required: false })
+    let url
+    if (customUrl) {
+      url = customUrl
+    } else {
+      const urlBase = 'https://cosmo.zip/pub/cosmocc/'
+      url =
+        version === 'latest'
+          ? `${urlBase}cosmocc.zip`
+          : `${urlBase}cosmocc-${version}.zip`
+    }
     const cosmopolitan = await tc.downloadTool(url)
     await tc.extractZip(cosmopolitan, cosmopolitanPath)
     core.addPath(path.join(cosmopolitanPath, 'bin'))

@@ -33,9 +33,11 @@ To use the latest nightly build from Cosmopolitan's CI:
     version: 'nightly'
 ```
 
-Nightly builds are downloaded from GitHub Actions artifacts and require a GitHub
-token (provided automatically via `github-token`). Nightly builds skip caching
-since they change daily.
+Nightly builds are downloaded from the
+[nightly-cosmocc](https://github.com/jart/cosmopolitan/actions/workflows/nightly-cosmocc.yml)
+GitHub Actions workflow artifacts and require a GitHub token (provided
+automatically via `github-token`). Nightly builds skip caching since they change
+daily.
 
 You can also specify a custom URL for the cosmocc zip archive using the `url`
 input. When using `url`, the `version` input is optional — if omitted, caching

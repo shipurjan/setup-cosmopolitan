@@ -16,49 +16,59 @@ const apeInstallUrl =
  */
 async function run() {
   try {
-    const version = core.getInput('version', { required: true })
+    const version = core.getInput('version', { required: false })
+    const customUrl = core.getInput('url', { required: false })
+
+    if (!version && !customUrl) {
+      throw new Error('Either "version" or "url" must be provided')
+    }
 
     const userPath = core.getInput('path', { required: false })
     if (userPath[0] === '/' || userPath[0] === '~') {
       throw new Error('Path must be relative to the workspace')
     }
 
-    const cachedDir = tc.find('cosmocc', version)
-    if (fs.existsSync(cachedDir)) {
-      core.addPath(path.join(cachedDir, 'bin'))
-      await install(cachedDir)
-      return
-    }
+    if (version) {
+      const cachedDir = tc.find('cosmocc', version)
+      if (fs.existsSync(cachedDir)) {
+        core.addPath(path.join(cachedDir, 'bin'))
+        await install(cachedDir)
+        return
+      }
 
-    const cosmopolitanPath = path.join(process.env.GITHUB_WORKSPACE, userPath)
+      const cosmopolitanPath = path.join(process.env.GITHUB_WORKSPACE, userPath)
 
-    const cacheKey = `cosmocc-${version}`
-    const cacheKeyId = await cache.restoreCache([cosmopolitanPath], cacheKey)
-    if (cacheKeyId !== undefined) {
-      core.addPath(path.join(cosmopolitanPath, 'bin'))
-      await install(cosmopolitanPath)
-      return
-    }
+      const cacheKey = `cosmocc-${version}`
+      const cacheKeyId = await cache.restoreCache([cosmopolitanPath], cacheKey)
+      if (cacheKeyId !== undefined) {
+        core.addPath(path.join(cosmopolitanPath, 'bin'))
+        await install(cosmopolitanPath)
+        return
+      }
 
-    const customUrl = core.getInput('url', { required: false })
-    let url
-    if (customUrl) {
-      url = customUrl
-    } else {
       const urlBase = 'https://cosmo.zip/pub/cosmocc/'
-      url =
-        version === 'latest'
+      const url = customUrl
+        ? customUrl
+        : version === 'latest'
           ? `${urlBase}cosmocc.zip`
           : `${urlBase}cosmocc-${version}.zip`
+      const cosmopolitan = await tc.downloadTool(url)
+      await tc.extractZip(cosmopolitan, cosmopolitanPath)
+      core.addPath(path.join(cosmopolitanPath, 'bin'))
+
+      const cachedPath = await tc.cacheDir(cosmopolitanPath, 'cosmocc', version)
+      await cache.saveCache([cosmopolitanPath], cacheKey)
+
+      await install(cachedPath)
+    } else {
+      const cosmopolitanPath = path.join(process.env.GITHUB_WORKSPACE, userPath)
+
+      const cosmopolitan = await tc.downloadTool(customUrl)
+      await tc.extractZip(cosmopolitan, cosmopolitanPath)
+      core.addPath(path.join(cosmopolitanPath, 'bin'))
+
+      await install(cosmopolitanPath)
     }
-    const cosmopolitan = await tc.downloadTool(url)
-    await tc.extractZip(cosmopolitan, cosmopolitanPath)
-    core.addPath(path.join(cosmopolitanPath, 'bin'))
-
-    const cachedPath = await tc.cacheDir(cosmopolitanPath, 'cosmocc', version)
-    await cache.saveCache([cosmopolitanPath], cacheKey)
-
-    await install(cachedPath)
   } catch (error) {
     // Fail the workflow run if an error occurs
     core.setFailed(error.message)

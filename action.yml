@@ -5,7 +5,7 @@ description:
 inputs:
   version:
     description: 'Cosmospolitan toolchain version'
-    required: true
+    required: false
   path:
     description: 'Toolchain path'
     required: false

@@ -26,11 +26,11 @@ relative to the GitHub workspace. You can optionally change it using the `path`
 input.
 
 You can also specify a custom URL for the cosmocc zip archive using the `url`
-input:
+input. When using `url`, the `version` input is optional — if omitted, caching
+is skipped and the archive is always downloaded fresh:
 
 ```yaml
 - uses: tritao/setup-cosmopolitan@v1.3
   with:
-    version: '4.0.2'
     url: 'https://example.com/custom-cosmocc.zip'
 ```

@@ -7,7 +7,7 @@ GitHub Action to setup Cosmopolitan toolchain on Linux, Windows and macOS.
 To setup it up, add a step to your GitHub workflow configuration :
 
 ```yaml
-- uses: shipurjan/setup-cosmopolitan@feature/add-custom-url
+- uses: shipurjan/setup-cosmopolitan@1f92831f1e4197d9ed52449de0f9d1efc2bdf04e
   with:
     version: '4.0.2'
 ```
@@ -28,7 +28,7 @@ input.
 To use the latest nightly build from Cosmopolitan's CI:
 
 ```yaml
-- uses: shipurjan/setup-cosmopolitan@feature/add-custom-url
+- uses: shipurjan/setup-cosmopolitan@1f92831f1e4197d9ed52449de0f9d1efc2bdf04e
   with:
     version: 'nightly'
 ```
@@ -44,7 +44,7 @@ input. When using `url`, the `version` input is optional — if omitted, caching
 is skipped and the archive is always downloaded fresh:
 
 ```yaml
-- uses: shipurjan/setup-cosmopolitan@feature/add-custom-url
+- uses: shipurjan/setup-cosmopolitan@1f92831f1e4197d9ed52449de0f9d1efc2bdf04e
   with:
     url: 'https://example.com/custom-cosmocc.zip'
 ```
